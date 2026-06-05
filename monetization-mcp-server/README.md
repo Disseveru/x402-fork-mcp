@@ -65,6 +65,78 @@ charges agents and routes the USDC to your address.
 
 ---
 
+## 📱 Run from a phone — NO Termux, NO command line
+
+Everything below happens in your mobile **web browser** by tapping and pasting.
+Pick one path.
+
+### Path A — Replit (easiest way to run + test for free)
+
+1. In your browser go to **https://replit.com** and sign in (Google works).
+2. Tap **Create App → Import from GitHub** and paste this repo URL:
+   `https://github.com/x402-foundation/x402`
+3. Replit opens an editor. Open the file named **`.replit`** (create it if it
+   isn't there) and paste **exactly** this, then save:
+
+   ```
+   run = "cd monetization-mcp-server && npm install && npm start"
+   ```
+
+4. Open the **Secrets** tool (the 🔒 lock icon). Add these key/value pairs
+   (tap "New secret" for each). You only need your **public** address:
+
+   | Key | Value |
+   | --- | --- |
+   | `EVM_ADDRESS` | your public Base address (`0x...`) |
+   | `SVM_ADDRESS` | *(optional)* your public Solana address |
+   | `EVM_NETWORK` | `eip155:84532` |
+   | `FACILITATOR_URL` | `https://x402.org/facilitator` |
+   | `SOLANA_FEED_PRICE` | `$0.05` |
+   | `APIFY_SCRAPER_PRICE` | `$0.10` |
+
+5. Tap the big **Run** button. Wait for it to install and start.
+6. A small web preview (Webview) opens with a URL like
+   `https://something.replit.dev`. **That is your live server.** Tap it — you'll
+   see the info page listing your tools and prices. ✅
+
+> Defaults use **free test networks**, so nothing costs real money while you try
+> it. To go live with real USDC, change `EVM_NETWORK` to `eip155:8453`
+> (Base Mainnet) in Secrets and press Run again.
+
+### Path B — Render (a permanent, always-on server with a public link)
+
+Best when you want your "vending machine" to stay online so agents can pay it
+any time.
+
+1. In your browser go to **https://render.com** and sign in with GitHub.
+2. Tap **New + → Web Service**, then pick this repository.
+3. Fill in the web form (just tap the fields and paste):
+
+   | Field | Value |
+   | --- | --- |
+   | **Root Directory** | `monetization-mcp-server` |
+   | **Runtime** | `Node` |
+   | **Build Command** | `npm install` |
+   | **Start Command** | `npm start` |
+
+4. Scroll to **Environment Variables** and add the same keys as the Replit table
+   above (at minimum `EVM_ADDRESS`). Do **not** add a `PORT` — Render sets it.
+5. Tap **Create Web Service**. Render builds it and gives you a public HTTPS URL
+   like `https://your-app.onrender.com`. That's your server. ✅
+
+---
+
+## ✅ How to test it (also no command line)
+
+Just open these in your phone's browser, using your live URL from above:
+
+- `https://YOUR-URL/` → a plain page listing your tools + prices (proves it's running).
+- `https://YOUR-URL/health` → a JSON status with networks and prices.
+
+Seeing those means the server is live and ready to charge agents. (Calling a
+*paid* tool requires a paying, x402-aware agent — see the next section — because
+a normal browser can't sign a USDC payment.)
+
 ## 🔌 Connect an AI agent (client config)
 
 Paste this into your MCP client's config (e.g. Claude Desktop's
