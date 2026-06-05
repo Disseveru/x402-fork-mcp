@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "x402-monetization": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://localhost:4022/sse"]
+    }
+  }
+}
