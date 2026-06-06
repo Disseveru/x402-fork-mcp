@@ -9,7 +9,14 @@ import { config as loadEnv } from 'dotenv'
 
 loadEnv()
 
-/** Throws with a readable message if no receiving wallet is configured. */
+/**
+ * Ensures at least one receiving wallet address is configured.
+ *
+ * If both `evm` and `svm` are missing or empty, logs setup guidance and terminates the process with exit code 1.
+ *
+ * @param evm - EVM (Ethereum-like) public address (e.g. `0x...`)
+ * @param svm - Solana public address
+ */
 function requireAtLeastOneWallet(evm?: string, svm?: string): void {
   if (!evm && !svm) {
     console.error(

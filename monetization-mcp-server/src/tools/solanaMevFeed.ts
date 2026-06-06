@@ -54,7 +54,11 @@ interface ArbitrageOpportunity {
 const DEFAULT_DEXES = ['Raydium', 'Orca', 'Meteora', 'Phoenix', 'Lifinity']
 const PAIRS = ['SOL/USDC', 'JUP/USDC', 'BONK/SOL', 'WIF/USDC', 'JTO/USDC', 'PYTH/USDC']
 
-/** Queries the configured Solana RPC for slot + health. Never throws. */
+/**
+ * Checks the configured Solana RPC for liveness and obtains the current slot.
+ *
+ * @returns An object with `ok` indicating whether the RPC responded successfully, `slot` set to the reported slot number when available, and `detail` containing a short status or error message.
+ */
 async function probeRpc(): Promise<{ ok: boolean; slot?: number; detail: string }> {
   try {
     const controller = new AbortController()
@@ -79,7 +83,16 @@ async function probeRpc(): Promise<{ ok: boolean; slot?: number; detail: string 
   }
 }
 
-/** SCAFFOLD generator — deterministic-ish simulated opportunities. */
+/**
+ * Generate a list of simulated cross-DEX arbitrage opportunities for the given DEXs.
+ *
+ * Each produced entry is a synthetic ArbitrageOpportunity containing buy/sell DEXs (always different),
+ * a trading pair, estimated spread, notional and profit in USD, a simple route, and a confidence score.
+ *
+ * @param dexes - Array of DEX identifiers to use as buy/sell venues
+ * @param limit - Number of opportunity objects to generate
+ * @returns An array of `ArbitrageOpportunity` objects with simulated values
+ */
 function generateOpportunities(dexes: string[], limit: number): ArbitrageOpportunity[] {
   const out: ArbitrageOpportunity[] = []
   for (let i = 0; i < limit; i++) {
@@ -105,10 +118,14 @@ function generateOpportunities(dexes: string[], limit: number): ArbitrageOpportu
 }
 
 /**
- * Business handler for the Solana MEV/arbitrage feed tool.
+ * Produce an MCP tool response containing a simulated feed of Solana cross-DEX arbitrage opportunities.
  *
- * @param rawArgs - Caller-supplied arguments (validated here).
- * @returns MCP tool result containing the opportunity feed as JSON text.
+ * Validates and coerces `rawArgs` against `SolanaMevArgs`, probes the configured Solana RPC for liveness,
+ * generates simulated opportunity rows across the selected DEXes, applies the optional `minProfitUsd`
+ * filter, and returns the assembled payload as JSON text.
+ *
+ * @param rawArgs - Caller-supplied arguments to be parsed by `SolanaMevArgs`
+ * @returns The MCP tool response with a single text content item whose `text` is the JSON-formatted opportunity feed
  */
 export async function runSolanaMevFeed(
   rawArgs: Record<string, unknown>,

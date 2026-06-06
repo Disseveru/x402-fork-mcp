@@ -39,7 +39,13 @@ export const apifyScraperInputSchema = {
 const ApifyArgs = z.object(apifyScraperInputSchema)
 export type ApifyArgs = z.infer<typeof ApifyArgs>
 
-/** Builds clearly-labelled mock results when no Apify token is configured. */
+/**
+ * Creates a labeled mock response for an Apify actor run when no APIFY_TOKEN is configured.
+ *
+ * @param args - Validated input arguments used to populate `actorId` and `requestedInput`
+ * @param maxItems - Requested maximum number of items; the mock output is capped to 3 items
+ * @returns An object containing `status: 'ok'`, `mode: 'mock'`, a human-readable `note`, `actorId`, `requestedInput`, `count`, `items` (array of mock items with `id`, `actor`, `text`, `likes`, and `url`), and `generatedAt` timestamp
+ */
 function mockResult(args: ApifyArgs, maxItems: number) {
   const items = Array.from({ length: Math.min(maxItems, 3) }, (_, i) => ({
     id: `mock_${i + 1}`,
@@ -61,10 +67,12 @@ function mockResult(args: ApifyArgs, maxItems: number) {
 }
 
 /**
- * Business handler for the Apify social-media scraper tool.
+ * Executes the Apify actor scraper specified by the caller and returns the dataset items as an MCP text payload.
  *
- * @param rawArgs - Caller-supplied arguments (validated here).
- * @returns MCP tool result containing scraped items as JSON text.
+ * @param rawArgs - Unvalidated input object parsed against the `ApifyArgs` schema (expects `actorId`, optional `input`, and optional `maxItems`)
+ * @returns An object with `content: [{ type: 'text'; text: string }]` where `text` is pretty-printed JSON describing the result:
+ * - On success: `{ status: 'ok', mode: 'live'|'mock', actorId, count, items, generatedAt }`
+ * - On error: `{ status: 'error', mode: 'live'|'mock', actorId, httpStatus? , detail }`
  */
 export async function runApifyScraper(
   rawArgs: Record<string, unknown>,
