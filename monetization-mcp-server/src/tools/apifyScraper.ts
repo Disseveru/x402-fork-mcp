@@ -15,31 +15,29 @@
  * Payment gating is handled by the caller (createPaymentWrapper).
  */
 
-import { z } from "zod";
-import { appConfig } from "../config.js";
+import { z } from 'zod'
+import { appConfig } from '../config.js'
 
 export const apifyScraperInputSchema = {
   actorId: z
     .string()
     .min(1)
-    .describe(
-      "Apify Actor id or name, e.g. 'apify/instagram-scraper' or 'apify~tweet-scraper'.",
-    ),
+    .describe("Apify Actor id or name, e.g. 'apify/instagram-scraper' or 'apify~tweet-scraper'."),
   input: z
     .record(z.any())
     .optional()
-    .describe("The Actor input object (the run configuration / JSON payload)."),
+    .describe('The Actor input object (the run configuration / JSON payload).'),
   maxItems: z
     .number()
     .int()
     .min(1)
     .max(1000)
     .optional()
-    .describe("Cap on the number of dataset items returned (default 25)."),
-};
+    .describe('Cap on the number of dataset items returned (default 25).'),
+}
 
-const ApifyArgs = z.object(apifyScraperInputSchema);
-export type ApifyArgs = z.infer<typeof ApifyArgs>;
+const ApifyArgs = z.object(apifyScraperInputSchema)
+export type ApifyArgs = z.infer<typeof ApifyArgs>
 
 /** Builds clearly-labelled mock results when no Apify token is configured. */
 function mockResult(args: ApifyArgs, maxItems: number) {
@@ -48,18 +46,18 @@ function mockResult(args: ApifyArgs, maxItems: number) {
     actor: args.actorId,
     text: `MOCK item ${i + 1} — set APIFY_TOKEN in .env to fetch real data.`,
     likes: Math.floor(Math.random() * 5000),
-    url: "https://example.com/mock",
-  }));
+    url: 'https://example.com/mock',
+  }))
   return {
-    status: "ok",
-    mode: "mock",
-    note: "MOCK DATA: APIFY_TOKEN is not set. Add it to .env to run the real Apify Actor.",
+    status: 'ok',
+    mode: 'mock',
+    note: 'MOCK DATA: APIFY_TOKEN is not set. Add it to .env to run the real Apify Actor.',
     actorId: args.actorId,
     requestedInput: args.input ?? {},
     count: items.length,
     items,
     generatedAt: new Date().toISOString(),
-  };
+  }
 }
 
 /**
@@ -70,46 +68,46 @@ function mockResult(args: ApifyArgs, maxItems: number) {
  */
 export async function runApifyScraper(
   rawArgs: Record<string, unknown>,
-): Promise<{ content: Array<{ type: "text"; text: string }>; isError?: boolean }> {
-  const args = ApifyArgs.parse(rawArgs);
-  const maxItems = args.maxItems ?? 25;
+): Promise<{ content: Array<{ type: 'text'; text: string }>; isError?: boolean }> {
+  const args = ApifyArgs.parse(rawArgs)
+  const maxItems = args.maxItems ?? 25
 
   if (!appConfig.apifyToken) {
     return {
-      content: [{ type: "text", text: JSON.stringify(mockResult(args, maxItems), null, 2) }],
-    };
+      content: [{ type: 'text', text: JSON.stringify(mockResult(args, maxItems), null, 2) }],
+    }
   }
 
   // Apify accepts both "user/actor" and "user~actor"; normalise to the tilde
   // form used by the REST path.
-  const actorPath = encodeURIComponent(args.actorId.replace("/", "~"));
+  const actorPath = encodeURIComponent(args.actorId.replace('/', '~'))
   const url =
     `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items` +
-    `?token=${appConfig.apifyToken}&limit=${maxItems}`;
+    `?token=${appConfig.apifyToken}&limit=${maxItems}`
 
   try {
-    const controller = new AbortController();
+    const controller = new AbortController()
     // Scrapers can take a while; allow up to ~2 minutes.
-    const timeout = setTimeout(() => controller.abort(), 120_000);
+    const timeout = setTimeout(() => controller.abort(), 120_000)
     const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify(args.input ?? {}),
       signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    })
+    clearTimeout(timeout)
 
     if (!res.ok) {
-      const body = await res.text();
+      const body = await res.text()
       return {
         isError: true,
         content: [
           {
-            type: "text",
+            type: 'text',
             text: JSON.stringify(
               {
-                status: "error",
-                mode: "live",
+                status: 'error',
+                mode: 'live',
                 actorId: args.actorId,
                 httpStatus: res.status,
                 detail: body.slice(0, 1000),
@@ -119,18 +117,18 @@ export async function runApifyScraper(
             ),
           },
         ],
-      };
+      }
     }
 
-    const items = (await res.json()) as unknown[];
+    const items = (await res.json()) as unknown[]
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: JSON.stringify(
             {
-              status: "ok",
-              mode: "live",
+              status: 'ok',
+              mode: 'live',
               actorId: args.actorId,
               count: Array.isArray(items) ? items.length : 0,
               items,
@@ -141,25 +139,25 @@ export async function runApifyScraper(
           ),
         },
       ],
-    };
+    }
   } catch (err) {
     return {
       isError: true,
       content: [
         {
-          type: "text",
+          type: 'text',
           text: JSON.stringify(
             {
-              status: "error",
-              mode: "live",
+              status: 'error',
+              mode: 'live',
               actorId: args.actorId,
-              detail: err instanceof Error ? err.message : "Apify request failed",
+              detail: err instanceof Error ? err.message : 'Apify request failed',
             },
             null,
             2,
           ),
         },
       ],
-    };
+    }
   }
 }
