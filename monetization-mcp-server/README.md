@@ -124,6 +124,25 @@ any time.
 5. Tap **Create Web Service**. Render builds it and gives you a public HTTPS URL
    like `https://your-app.onrender.com`. That's your server. ✅
 
+### Path C — Railway (also permanent + public, very few taps)
+
+Another always-on host. Same idea as Render, slightly different buttons.
+
+1. In your browser go to **https://railway.app** and sign in with GitHub.
+2. Tap **New Project → Deploy from GitHub repo**, then pick this repository.
+3. Open the service → **Settings** and set:
+
+   | Field             | Value                     |
+   | ----------------- | ------------------------- |
+   | **Root Directory** | `monetization-mcp-server` |
+   | **Build Command**  | `npm install`             |
+   | **Start Command**  | `npm start`               |
+
+4. Open the **Variables** tab and add the same keys as the Replit table above (at
+   minimum `EVM_ADDRESS`). Do **not** add a `PORT` — Railway sets it.
+5. In **Settings → Networking**, tap **Generate Domain** to get a public HTTPS URL
+   like `https://your-app.up.railway.app`. That's your server. ✅
+
 ---
 
 ## ✅ How to test it (also no command line)
