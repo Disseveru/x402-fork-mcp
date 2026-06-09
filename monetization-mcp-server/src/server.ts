@@ -86,7 +86,12 @@ async function buildAccepts(
   return accepts
 }
 
-/** Inline accepts config for the classic @x402/express HTTP middleware. */
+/**
+ * Build an array of payment "accepts" entries for enabled networks to use with the @x402/express payment middleware.
+ *
+ * @param price - The price string to require for each entry (as expected by x402, e.g., "100")
+ * @returns An array of accept-entry objects for each enabled network; EVM entries include `extra: EVM_EXTRA`
+ */
 function inlineAccepts(price: string): Array<Record<string, unknown>> {
   const accepts: Array<Record<string, unknown>> = []
   if (evmEnabled) {
@@ -110,9 +115,9 @@ function inlineAccepts(price: string): Array<Record<string, unknown>> {
 }
 
 /**
- * Boots the resource server, MCP server, tools, and Express transport.
+ * Initialize and start the x402 resource server, register paid and free MCP tools, and launch the Express HTTP/SSE transport.
  *
- * @returns Promise that resolves once the HTTP server is listening.
+ * Boots the facilitator-backed resource server (registering EVM/SVM schemes when enabled), builds per-tool payment requirements and payment-wrapped handlers, registers MCP tools (paid and free), and starts the Express server exposing SSE MCP transport, MCP message endpoints, a payment-gated demo route, and health/info endpoints.
  */
 async function main(): Promise<void> {
   // --------------------------------------------------------------------------
