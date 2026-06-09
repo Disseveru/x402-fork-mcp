@@ -90,20 +90,22 @@ export async function runApifyScraper(
   // form used by the REST path.
   const actorPath = encodeURIComponent(args.actorId.replace('/', '~'))
   const url =
-    `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items` +
-    `?token=${appConfig.apifyToken}&limit=${maxItems}`
+    `https://api.apify.com/v2/acts/${actorPath}/run-sync-get-dataset-items?limit=${maxItems}`
+
+  const controller = new AbortController()
+  // Scrapers can take a while; allow up to ~2 minutes.
+  const timeout = setTimeout(() => controller.abort(), 120_000)
 
   try {
-    const controller = new AbortController()
-    // Scrapers can take a while; allow up to ~2 minutes.
-    const timeout = setTimeout(() => controller.abort(), 120_000)
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        Authorization: `Bearer ${appConfig.apifyToken}`,
+      },
       body: JSON.stringify(args.input ?? {}),
       signal: controller.signal,
     })
-    clearTimeout(timeout)
 
     if (!res.ok) {
       const body = await res.text()
@@ -167,5 +169,7 @@ export async function runApifyScraper(
         },
       ],
     }
+  } finally {
+    clearTimeout(timeout)
   }
 }

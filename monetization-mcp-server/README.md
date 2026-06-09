@@ -11,7 +11,7 @@ paying, it gets an HTTP-402 "Payment Required" response with your price. When it
 pays, the payment is verified + settled on-chain by a _facilitator_, the money
 lands in **your wallet**, and the tool result is returned.
 
-### Tools included (scaffolded, ready to extend)
+## Tools included (scaffolded, ready to extend)
 
 | Tool                        | Type    | What it does                                                                                                                                                          |
 | --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

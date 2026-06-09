@@ -214,11 +214,13 @@ function startExpressServer(mcpServer: McpServer, resourceServer: x402ResourceSe
 
   app.post('/messages', express.json(), async (req, res) => {
     const sessionId = (req.query.sessionId as string) || ''
-    const transport = transports.get(sessionId) || Array.from(transports.values())[0]
-    if (!transport) {
-      res.status(400).json({ error: 'No active SSE session. Open GET /sse first.' })
+    if (!sessionId || !transports.has(sessionId)) {
+      res.status(400).json({
+        error: 'Invalid or missing sessionId. Ensure sessionId matches an active SSE session.',
+      })
       return
     }
+    const transport = transports.get(sessionId)!
     await transport.handlePostMessage(req, res, req.body)
   })
 

@@ -60,16 +60,16 @@ const PAIRS = ['SOL/USDC', 'JUP/USDC', 'BONK/SOL', 'WIF/USDC', 'JTO/USDC', 'PYTH
  * @returns An object with `ok` indicating whether the RPC responded successfully, `slot` set to the reported slot number when available, and `detail` containing a short status or error message.
  */
 async function probeRpc(): Promise<{ ok: boolean; slot?: number; detail: string }> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+
   try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
     const res = await fetch(appConfig.solanaRpcUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'getSlot' }),
       signal: controller.signal,
     })
-    clearTimeout(timeout)
     if (!res.ok) {
       return { ok: false, detail: `RPC HTTP ${res.status}` }
     }
@@ -80,6 +80,8 @@ async function probeRpc(): Promise<{ ok: boolean; slot?: number; detail: string 
     return { ok: false, detail: json.error?.message || 'unexpected RPC response' }
   } catch (err) {
     return { ok: false, detail: err instanceof Error ? err.message : 'RPC unreachable' }
+  } finally {
+    clearTimeout(timeout)
   }
 }
 
@@ -132,11 +134,34 @@ export async function runSolanaMevFeed(
 ): Promise<{ content: Array<{ type: 'text'; text: string }>; isError?: boolean }> {
   const args = SolanaMevArgs.parse(rawArgs)
   const limit = args.limit ?? 5
-  const dexes = args.dexes?.length ? args.dexes : DEFAULT_DEXES
+  let dexes = args.dexes?.length ? args.dexes : DEFAULT_DEXES
+
+  // Ensure at least 2 DEXes for valid arbitrage
+  if (dexes.length < 2) {
+    return {
+      isError: true,
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(
+            {
+              status: 'error',
+              detail:
+                'At least 2 DEXes are required for arbitrage opportunities. Provide at least 2 dexes or omit the filter to use defaults.',
+            },
+            null,
+            2,
+          ),
+        },
+      ],
+    }
+  }
 
   const rpc = await probeRpc()
 
   let opportunities = generateOpportunities(dexes, limit)
+  // Filter out any opportunities where buy and sell DEX are the same
+  opportunities = opportunities.filter((o) => o.buyDex !== o.sellDex)
   if (typeof args.minProfitUsd === 'number') {
     opportunities = opportunities.filter((o) => o.estProfitUsd >= args.minProfitUsd!)
   }
@@ -146,7 +171,7 @@ export async function runSolanaMevFeed(
     note: 'SCAFFOLD: opportunities are simulated. Replace generateOpportunities() with real DEX pool data to go live.',
     network: appConfig.svmNetwork,
     rpc: {
-      endpoint: appConfig.solanaRpcUrl,
+      endpoint: 'redacted',
       live: rpc.ok,
       currentSlot: rpc.slot ?? null,
       detail: rpc.detail,
