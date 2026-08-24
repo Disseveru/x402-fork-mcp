@@ -1,8 +1,6 @@
 module github.com/x402-foundation/x402/examples/go/clients/batch-settlement
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.25.0
 
 replace github.com/x402-foundation/x402/go/v2 => ../../../../go
 
@@ -31,7 +29,7 @@ require (
 	github.com/supranational/blst v0.3.16-0.20250831170142-f48500c1fdbe // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
-	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
