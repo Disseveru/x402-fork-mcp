@@ -1,11 +1,9 @@
 module github.com/x402-foundation/x402/e2e/clients/mcp-go
 
-go 1.24.0
-
-toolchain go1.24.1
+go 1.25.0
 
 require (
-	github.com/modelcontextprotocol/go-sdk v1.3.0
+	github.com/modelcontextprotocol/go-sdk v1.4.1
 	github.com/x402-foundation/x402/go/v2 v2.14.0
 )
 
@@ -24,17 +22,19 @@ require (
 	github.com/ethereum/go-verkle v0.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/google/jsonschema-go v0.4.2 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
+	github.com/segmentio/asm v1.1.3 // indirect
+	github.com/segmentio/encoding v0.5.4 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/supranational/blst v0.3.16-0.20250831170142-f48500c1fdbe // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
-	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/oauth2 v0.30.0 // indirect
+	golang.org/x/crypto v0.52.0 // indirect
+	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 )
 
 replace github.com/x402-foundation/x402/go/v2 => ../../../go
